@@ -1,6 +1,13 @@
 <?php
+session_start();//with this you can use SESSION in PHP
 if($_POST){
-    header('Location:dashboard.php');//redirect
+    if($_POST['email'] == "josue@example.com" && $_POST['password'] == 'Josue97'){
+        $_SESSION['user'] = 'ok';
+        $_SESSION['user_name'] = 'JosueOb';
+        header("Location:dashboard.php");
+    }else{
+        $message = "Error: Email and Password are invalid";
+    }
 }
 ?>
 <!doctype html>
@@ -27,17 +34,23 @@ if($_POST){
                     Login
                 </div>
                 <div class="card-body">
+                    <?php
+                    if(isset($message)){
+                        echo "<div class='alert alert-danger' role='alert'>$message</div>";
+                    }
+                    ?>
+
                     <form action="" method="POST">
                         <div class="form-group">
                             <label for="email">Email</label>
                             <input type="text" name="email" id="email" class="form-control" placeholder="Email"
-                                   aria-describedby="help-email">
+                                   aria-describedby="help-email" required>
                             <small id="help-email" class="text-muted">Typing your address email</small>
                         </div>
                         <div class="form-group">
                             <label for="password">Password</label>
                             <input type="password" name="password" id="password" class="form-control" placeholder="Password"
-                                   aria-describedby="help-password">
+                                   aria-describedby="help-password" required>
                             <small id="help-password" class="text-muted">Typing your password</small>
                         </div>
                         <button type="submit" class="btn btn-primary">Sign In</button>
