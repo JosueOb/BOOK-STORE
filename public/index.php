@@ -1,16 +1,13 @@
-<?php
-echo "Hello Word";
-?>
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Book Store</title>
-</head>
-<body>
-    <h1>Book Store</h1>
-</body>
-</html>
+<?php include("template/header.php");?>
+
+    <div class="jumbotron">
+        <h1 class="display-3">Jumbo heading</h1>
+        <p class="lead">Jumbo helper text</p>
+        <hr class="my-2">
+        <p>More info</p>
+        <p class="lead">
+            <a class="btn btn-primary btn-lg" href="#" role="button">Jumbo action name</a>
+        </p>
+    </div>
+
+<?php include("template/footer.php");?>
