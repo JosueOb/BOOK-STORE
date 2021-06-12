@@ -12,8 +12,19 @@
         case 'add':
             $query = $connection->prepare(/** @lang text */ "INSERT INTO `books` (`name`, `image`) VALUES (:name, :image);");
             $query->bindParam(':name',$name);
-            $query->bindParam(':image',$image);
+
+            $date = new DateTime();
+            $file_name = ($image != "") ? $date->getTimestamp()."_".$_FILES["image"]['name'] : "image.jpg";
+
+            $tmp_image = $_FILES['image']["tmp_name"];
+            if($tmp_image != ""){
+                move_uploaded_file($tmp_image, "../../img/".$file_name);//Store temporal image
+            }
+
+            $query->bindParam(':image',$file_name);
             $query->execute();
+
+            header('Location:books.php');
             break;
         case 'update':
             //UPDATE `bookstore`.`books` SET `name` = 'PHP book old' WHERE (`id` = '1');
@@ -23,11 +34,34 @@
             $query->execute();
 
             if($image != ""){
+                //Store new image on the server
+                $date = new DateTime();
+                $file_name = ($image != "") ? $date->getTimestamp()."_".$_FILES["image"]['name'] : "image.jpg";
+                $tmp_image = $_FILES['image']["tmp_name"];
+
+                move_uploaded_file($tmp_image, "../../img/".$file_name);//Store temporal image
+
+                //Delete old image on the server
+                //First search image db
+                $query = $connection->prepare(/** @lang text */ "SELECT image FROM books where id=:id");
+                $query->bindParam(':id', $id);
+                $query->execute();
+                $book = $query->fetch(PDO::FETCH_LAZY);
+                //Second delete image saved on the server
+                if(isset($book['image']) && ($book['image'] != 'image.jpg')){
+                    if(file_exists("../../img/".$book['image'])){
+                        unlink("../../img/".$book['image']);
+                    }
+                }
+
+                //Store new image record on the database
                 $query = $connection->prepare(/** @lang text */ "UPDATE `books` SET `image`=:image WHERE (`id`=:id )");
-                $query->bindParam(':image', $image);
+                $query->bindParam(':image', $file_name);
                 $query->bindParam(':id', $id);
                 $query->execute();
             }
+            header('Location:books.php');
+
             break;
         case 'select':
             $query = $connection->prepare(/** @lang text */ "SELECT * FROM books where id=:id");
@@ -38,12 +72,26 @@
             $image = $book['image'];
             break;
         case 'delete':
+            //First search image db
+            $query = $connection->prepare(/** @lang text */ "SELECT image FROM books where id=:id");
+            $query->bindParam(':id', $id);
+            $query->execute();
+            $book = $query->fetch(PDO::FETCH_LAZY);
+            //Second delete image saved on the server
+            if(isset($book['image']) && ($book['image'] != 'image.jpg')){
+                if(file_exists("../../img/".$book['image'])){
+                    unlink("../../img/".$book['image']);
+                }
+            }
+            //Late delete book record delete from the database
             $query = $connection->prepare(/** @lang text */ "DELETE FROM books where id=:id");
             $query->bindParam(':id', $id);
             $query->execute();
+
+            header('Location:books.php');
             break;
         case 'cancel':
-            echo 'cancel selected';
+            header('Location:books.php');
             break;
     }
 
@@ -62,24 +110,30 @@
                         <div class="form-group">
                             <label for="id">ID</label>
                             <input type="text" name="id" id="id" class="form-control" value="<?php echo $id;?>" placeholder="ID"
-                                   aria-describedby="help-id">
+                                   aria-describedby="help-id" required readonly>
                         </div>
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input type="text" name="name" id="name" class="form-control" value="<?php echo $name;?>" placeholder="Name"
-                                   aria-describedby="help-name">
+                                   aria-describedby="help-name" required>
                             <small id="help-name" class="text-muted">Typing book name</small>
                         </div>
                         <div class="form-group">
-                            <label for="name">Image: <?php echo $image;?></label>
+                            <label for="name">Image</label>
+                            <br/>
+                            <?php
+                            if($image != ""){
+                                echo "<img class='img-thumbnail rounded' src='../../img/$image' width='50px' alt='{$book['image']}'>";
+                            }
+                            ?>
                             <input type="file" name="image" id="image" class="form-control"  placeholder="Image"
                                    aria-describedby="help-image">
                             <small id="help-image" class="text-muted">Select book image</small>
                         </div>
                         <div class="btn-group" role="group" aria-label="">
-                            <button type="submit" name="action" value="add" class="btn btn-success">Add</button>
-                            <button type="submit" name="action" value="update" class="btn btn-warning">Update</button>
-                            <button type="submit" name="action" value="cancel" class="btn btn-info">Cancel</button>
+                            <button type="submit" name="action" <?php echo ($action =="select") ? "disabled" : "" ?> value="add" class="btn btn-success">Add</button>
+                            <button type="submit" name="action" <?php echo ($action !="select") ? "disabled" : "" ?> value="update" class="btn btn-warning">Update</button>
+                            <button type="submit" name="action" <?php echo ($action !="select") ? "disabled" : "" ?> value="cancel" class="btn btn-info">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -102,7 +156,9 @@
                     echo "<tr>
                         <td>{$book['id']}</td>
                         <td>{$book['name']}</td>
-                        <td>{$book['image']}</td>
+                        <td>
+                            <img class='img-thumbnail rounded' src='../../img/{$book['image']}' width='50px' alt='{$book['image']}'>
+                        </td>
                         <td>
                             <form method='POST'>
                                 <input type='text' name='id' value='{$book['id']}' hidden>
