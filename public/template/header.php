@@ -17,7 +17,7 @@
             <a class="nav-link" href="#">Book Store</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="../index.php">Home</a>
+            <a class="nav-link" href="../">Home</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="../books.php">Books</a>
