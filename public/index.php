@@ -2,7 +2,7 @@
 
     <div class="jumbotron">
         <h1 class="display-3">Welcome to Book Store</h1>
-        <p class="lead">We're a amazing book store</p>
+        <p class="lead">We're an amazing book store</p>
         <hr class="my-2">
         <p>More info</p>
         <p class="lead">
